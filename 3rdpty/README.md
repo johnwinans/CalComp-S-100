@@ -15,4 +15,7 @@ These are files that I have collected for reference and/or the basis of my own d
 A California Computer Systems manual archive.
 
 ## [Z80-Retro!](https://github.com/Z80-Retro)
-Acollection of Z80 and CP/M projects that provide much background on how one might develop a BIOS of one's own to run on a machine of this vintage.
+A collection of Z80 and CP/M projects that provide much background on how one might develop a BIOS of one's own to run on a machine of this vintage.
+
+## [zmac](http://48k.ca/zmac.html)
+A cross-assembler that I used to build MOSS. (Also found here: [../zmac/](../zmac/))
