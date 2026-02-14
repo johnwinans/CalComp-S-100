@@ -1,8 +1,9 @@
 ;
         TITLE   'DISK MOSS 2.2 MONITOR'
-        MACLIB  Z80
+;        MACLIB  Z80
         PAGE    68
-MOSS:   ORG     0F000H
+        ORG     0F000H
+MOSS:   EQU     $
 ROM:    EQU     0F000H  ;ROM START ADDRESS
 WSVEC:  EQU     0       ;VECTOR FOR WARM RESTART
 NBKPTS: EQU     2       ;NUMBER OF BREAKPOINTS
@@ -89,7 +90,7 @@ CBOOT:  JMP     INIT    ;COLD START
 CONIN:  JMP     CI      ;CONSOLE INPUT
 READER: JMP     RI      ;READER INPUT
 CONOUT: JMP     CO      ;CONSOLE OUTPUT
-PUNCH:  JMP     PO      ;PUNCH OUTPUT
+PUNCH:  JMP     PU      ;PUNCH OUTPUT
 LIST:   JMP     LO      ;LIST OUTPUT
 CONST:  JMP     CSTS    ;CONSOLE STATUS
         JMP     IOCHK   ;PUT IOBYTE INTO (A)
@@ -288,7 +289,7 @@ WINITA: LXI     H,WINIT ;RESET RETURN AND WARM START VECTOR
         CALL    DECHO   ;GET THE COMMAND
         SUI     'A'     ;GET RID OF ASCII ZONE
         JRC     QPRT    ;BAD COMMAND
-        CPI     'Z'-'A'+1       ;CHECK UPPER LIMIT
+        CP      'Z'-'A'+1       ;CHECK UPPER LIMIT
         JRNC    QPRT    ;BAD COMMAND
         ADD     A       ;DOUBLE IT FOR TABLE OFFSET
         MOV     E,A     ;SET UP FOR DOUBLE ADD
@@ -419,9 +420,9 @@ DIS3:   POP     H       ;REGET LINE START ADDRESS
 DIS4:   MOV     A,M     ;GET MEMORY VALUE
         ANI     7FH     ;STRIP OFF PARITY BIT
         MOV     C,A     ;SET UP FOR OUTPUT
-        CPI     ' '     ;SEE IF PRINTABLE IN ASCII
+        CP      ' '     ;SEE IF PRINTABLE IN ASCII
         JRC     DIS5    ;JUMP IF SO
-        CPI     7EH
+        CP      7EH
         JRC     DIS6
 DIS5:   MVI     C,'.'   ;ELSE, PRINT A DOT
 DIS6:   CALL    CONOUT
@@ -505,7 +506,7 @@ SUB1:   MOV     A,M     ;GET THE CONTENST OF THE ADDRESS
         CALL    PCHK    ;GET, CHECK CHARACTER
         RC              ;DONE IF CARRIAGE RETURN
         JRZ     SUB2    ;NO CHANGE IF BLANK OR ,
-        CPI     LF      ;SEE IF PREVIOUS BYTE WANTED
+        CP      LF      ;SEE IF PREVIOUS BYTE WANTED
         JRZ     SUB3    ;YES, DO IT
         PUSH    H       ;SAVE MEMORY POINTER
         CALL    EXF     ;GO GET REST OF NEW VALUE
@@ -513,7 +514,7 @@ SUB1:   MOV     A,M     ;GET THE CONTENST OF THE ADDRESS
         POP     H       ;RESTORE MEMORY POINTER
         MOV     M,E     ;PUT DOWN NEW VALUE
         MOV     A,C     ;GET THE DELIMITER
-        CPI     CR      ;SEE IF DONE (CARRIAGE RETURN)
+        CP      CR      ;SEE IF DONE (CARRIAGE RETURN)
         RZ              ;YES, RETURN TO MONITOR
 SUB2:   INX     H       ;NO, INCREMENT MEMORY POINTER
         INX     H       ;ALLOW A FALL-THROUGH ON THE NEXT INSTRUCTION
@@ -544,7 +545,7 @@ BITS:   PUSH    D       ;SAVE (D,E)
         CALL    LADRB   ;FIRST PROINT THE ADDRESS
 BITS2:  MVI     B,8     ;LOOP CONTROL FOR 8 BITS
 BITS1:  MOV     A,E     ;GET NEXT BIT
-        RLC             ;  INTO CARRY
+        RLCA            ;  INTO CARRY
         MOV     E,A     ;SAVE RESET
         MVI     A,'0'/2 ;BUILD ASCII 1 OR 0
         RAL             ;  CARRY DETERMINES WHICH
@@ -620,7 +621,7 @@ HILOX:  CALL    HILO    ;INC AND CHECK (H,L)
         ORA     A
         RZ              ;NONE, RETURN TO CONTINUE
         CALL    CONI    ;SEE IF WAIT OR BREAK
-        CPI     CTRLS
+        CP      CTRLS
         JRNZ    HILOD   ;JUMP IF BREAK
         JMP     CONI    ;WAIT FOR ANY INPUT
 ;
@@ -631,14 +632,14 @@ HILOX:  CALL    HILO    ;INC AND CHECK (H,L)
 ;
 NIBBLE: SUI     '0'     ;ASCII TO HEX CONVERSION
         RC              ;  DONE IF OUT OF RANGE
-        CPI     'G'-'0' ;CHECK UPPER END
+        CP      'G'-'0' ;CHECK UPPER END
         CMC             ;  TOGGLE THE CARRY BIT
         RC              ;  DONE IF OUT OF RANGE
-        CPI     '9'-'0'+1  ;SEE IF NUMERIC
+        CP      '9'-'0'+1  ;SEE IF NUMERIC
         CMC             ;  TOGGLE THE CARRY BIT
         RNC             ;  DONE IF SO
         SUI     'A'-'9'-1  ;SUBTRACT THE ALPHA BIAS
-        CPI     10      ;  SET CARRY FORINVALID CHAR
+        CP      10      ;  SET CARRY FORINVALID CHAR
         RET
 ;
 ; ROUTINE PCHK READS A CHARACTER FROM THE CONSOLE, THEN
@@ -650,11 +651,11 @@ NIBBLE: SUI     '0'     ;ASCII TO HEX CONVERSION
 ;       CARRY BIT.
 ;
 PCHK:   CALL    ECHO    ;GET,TEST FOR DELIMITER
-P2C:    CPI     ' '     ;  BLANK?
+P2C:    CP      ' '     ;  BLANK?
         RZ              ;  YES, DONE
-        CPI     ','     ;  NO, COMMA?
+        CP      ','     ;  NO, COMMA?
         RZ              ;  YES, DONE
-        CPI     CR      ;  NO, CARRIAGE RETURN?
+        CP      CR      ;  NO, CARRIAGE RETURN?
         STC             ;  SHOW IT IN CARY BIT
         RZ              ;  DONE IF CR
         CMC             ;CLEAR CARRY FOR NO DELIMITER
@@ -867,7 +868,7 @@ RW4:    PUSH    H       ;SLAVE THE DMA ADDRESS
         ORA     A
         JRZ     RW7     ;JUMP IT NOT
         LDA     SIDE    ;YES SEE IF NEXT SIDE OR TRACK NEEDED
-        CPI     0D0H
+        CP      0D0H
         JRNZ    RW7     ;NEXT TRACK, JUMP
         MVI     A,90H   ;ELSE, SET NEXT SIDE
         JR      RW8
@@ -939,7 +940,7 @@ PARM:   CALL    EXPR3   ;GET THE THREE PARAMETERS
         MOV     A,L     ;ERROR CHECK THE UNIT ASSIGNEMENT
         ORA     A
         JM      QPRT
-        CPI     4
+        CP      4
         JNC     QPRT
         STA     DISKNO  ;SET THE UNIT SELECT
         MOV     L,E     ;MOVE THE SECTORS PER TRACK OVER
@@ -978,7 +979,7 @@ HEXN:   CALL    EXLF    ;GET THE TWO NUMBERS
         CALL    LADRB   ;OUTPUT THEM
         POP     H       ;REGET THE FIRST NUMBER
         ORA     A       ;CLEAR THE CARRY BIT
-        DSBC    D       ;DO THE SUBTRACT
+        SBC     HL,DE   ;DO THE SUBTRACT
         JR      LADR    ;GO OUTPUT THE RESULT
 ;
 ; ROUTINE LADR PRINTS THE CONTENTS OF (H,L) ON THE
@@ -991,10 +992,10 @@ LADR:   MOV     A,H     ;GET HIGH TWO DIGITS
         CALL    HEX1    ;PRINT THEM
         MOV     A,L     ;GET LOW TWO DIGITS
 HEX1:   PUSH    PSW     ;SAVE THE LOW DIGIT
-        RRC             ;PUT HIGH NIBBLE INTO BITS 0-3
-        RRC
-        RRC
-        RRC
+        RRCA            ;PUT HIGH NIBBLE INTO BITS 0-3
+        RRCA
+        RRCA
+        RRCA
         CALL    HEX2    ;GO PRINT SINGLE DIGIT
         POP     PSW     ;REGET THE LOW DIGIT
 HEX2:   CALL    CONV    ;GO INSERT ASCII ZONE
@@ -1099,8 +1100,8 @@ MEMHEX: MOV     A,M             ; GET MEMORY CONTENTS
         MOV     A,M             ; GET MEMORY CONTENTS AGAIN
         ADD     C               ; ADD TO CHECKSUM
         MOV     C,A             ; STORE NEW CHECKSUM
-        INX     HL              ; NEXT MEMORY LOCATION
-        DCX     DE 
+        INX     H               ; NEXT MEMORY LOCATION
+        DCX     D 
         DJNZ    MEMHEX          ; CONTINUE UNTIL RECORD SAVED
         MOV     A,C             ; RETRIEVE CHECKSUM
         XRI     0FFH            ; XOR 0xFF
@@ -1120,7 +1121,7 @@ HEXOUT: PUSH    PSW              ;Convert the upper nybble to Hex ASCII first
         CALL    HEXOP           ;Convert the nybble D3-D0 to Hex ASCII
         POP     PSW              ;Retrieve the original value and convert the lower nybble
 HEXOP:  ANI     0FH             ;Convert the nybble at D3-D2-D1-D0 to Hex ASCII char
-        CPI     10              ;Neat trick for converting nybble to ASCII
+        CP      10              ;Neat trick for converting nybble to ASCII
         SBI     069H
         DAA                     ;Uses DAA trick
         MOV     C,A
@@ -1144,7 +1145,7 @@ LODLP:	INR	D		;ADVANCE NUMBER OF RECORDS DUMPED
 	CALL	CONOUT		;BACK UP TO START OF LINE
 	JMP	LODLP		;GET NEXT RECORD
 GIHEX:  CALL    CONIN           ;GET CHARACTER FROM TAPE
-        CPI     ':'             ;TEST FOR START OF RECORD
+        CP      ':'             ;TEST FOR START OF RECORD
         JNZ     GIHEX           ;IF NOT, IGNORE
         CALL    GETBYT          ;GET LENGTH
         ANA     A               ;TEST FOR END OF FILE
@@ -1188,10 +1189,10 @@ GETHL:  CALL    GETBYT          ;GET FIRST BYTE
 GETBYT: PUSH    B               ;SAVE B-C PAIR
         CALL    GETNIB          ;GEET FIRST NIBBLE
         JNC     RETGB           ;IF BAD, DON'T WAIT FOR MORE
-        RLC                     ;SHIFT INTO.
-        RLC                     ;UPPER NIBBLE.
-        RLC                     ;OF RESULT.
-        RLC                     ;SO WE CAN INSERT LOWER NIBBLE
+        RLCA                    ;SHIFT INTO.
+        RLCA                    ;UPPER NIBBLE.
+        RLCA                    ;OF RESULT.
+        RLCA                    ;SO WE CAN INSERT LOWER NIBBLE
         MOV     B,A             ;KEEP HIGH DIGIT IN B
         CALL    GETNIB          ;GET SECOND DIGIT
         JNC     RETGB           ;IF BAD, INDICATE SO
@@ -1201,19 +1202,19 @@ RETGB:  POP     B               ;RESTORE B-C PAIR
         RET
 ; GETS A NIBBLE FROM THE TERMINAL (IN ASCII HEX)
 GETNIB: CALL    CONIN           ;GET A CHARACTER
-        CPI     ' '             ;TEST FOR BLANK (ABORT1)
+        CP      ' '             ;TEST FOR BLANK (ABORT1)
         RZ                      ;IF SO, RETURN INDICATING BAD (CY=0)
-        CPI     CR              ;TEST FOR <CR> (ABORT2)
+        CP      CR              ;TEST FOR <CR> (ABORT2)
         RZ                      ;IF SO, RETURN INDICATING BAD
-        CPI     030H            ;TEST FOR INVALID (BELOW '0')
+        CP      030H            ;TEST FOR INVALID (BELOW '0')
         JC      GETNIB          ;IF SO, WAIT FOR MORE
-        CPI     'G'             ;TEST FOR INVALID (GREATER THAN 'F')
+        CP      'G'             ;TEST FOR INVALID (GREATER THAN 'F')
         JNC     GETNIB          ;IF SO, IGNORE
         MOV     C,A
         CALL    CONOUT          ;DISPLAY CHARACTER
-        CPI     03AH            ;TEST FOR INVALID
+        CP      03AH            ;TEST FOR INVALID
         JC      NUMH            ;IF OK, WE ARE IN
-        CPI     'A'             ;TEST FOR INVALID
+        CP      'A'             ;TEST FOR INVALID
         JC      GETNIB          ;IF BAD, IGNORE
         SUI     7               ;CONVERT TO DIGIT
 NUMH:   SUI     030H            ;CONVERT TO BINARY
@@ -1231,14 +1232,14 @@ BLK:    MVI     C,' '   ;OUTPUT A BLANK
 CO:     LDA     IOBYTE
         ANI     3       ;ISOLATE CONSOLE ASGT
         JZ      TTYOUT  ;TTY DEVICE ACTIVE
-        CPI     2
+        CP      2
         JM      CRTOUT  ;CRT ACTIVE
         JNZ     CUSO1   ;USER CONSOLE 1 ACTIVE
 ;
 LO:     LDA     IOBYTE
         ANI     0C0H    ;ISOLATE LIST ASGT
         JZ      TTYOUT  ;TTY DEVICE ACTIVE
-        CPI     80H
+        CP      80H
         JM      CRTOUT  ;CRTACTIVE
         JZ      LPRT    ;LINE PRINTER ACTIVE
         JMP     LUSE1   ;USER PRINTER 1 ACTIVE
@@ -1246,14 +1247,14 @@ LO:     LDA     IOBYTE
 CSTS:   LDA     IOBYTE
         ANI     3       ;ISOLATE CONSOLE ASGT
         JZ      TTST    ;TTY ACTIVE
-        CPI     2
+        CP      2
         JM      CRTST   ;CRT ACTIVE
         JNZ     CUST1   ;USER CONSOLE 1 ACTIVE
 ;
 BATST:  LDA     IOBYTE
         ANI     0CH     ;ISOLATE BATCH ASGT
         JZ      TTST    ;TTY ACTIVE
-        CPI     8
+        CP      8
         JM      PTRST   ;PAPER TAPE READER ACTIVE
         JZ      RUST1   ;USER READER 1 ACTIVE
         JMP     RUST2   ;USER READER 2 ACTIVE
@@ -1261,14 +1262,14 @@ BATST:  LDA     IOBYTE
 CI:     LDA     IOBYTE
         ANI     3       ;ISOLATE CONSOLE PORT
         JZ      TTYIN   ;TTY DEVICE ACTIVE
-        CPI     2
+        CP      2
         JM      CRTIN   ;CRT ACTIVE
         JNZ     CUSI1   ;USER CONSOLE 1 ACTIVE
 ;
 RI:     LDA     IOBYTE
         ANI     0CH     ;ISOLATE BATCH ASGT
         JZ      TTYRDR  ;TTY ACTIVE
-        CPI     8
+        CP      8
         JM      PTRIN   ;PAPER TAPE READER ACTIVE
         JZ      RUSI1   ;USER READER 1 ACTIVE
         JMP     RUSI2   ;USER READER 2 ACTIVE
@@ -1276,15 +1277,15 @@ RI:     LDA     IOBYTE
 LSTAT:  LDA     IOBYTE
         ANI     0C0H    ;ISOLATE THE LIST DEVICE ASGT
         JZ      TTOST
-        CPI     80H
+        CP      80H
         JM      CRTOST
         JZ      LPRST
         JMP     LUST1
 ;
-PO:     LDA     IOBYTE
+PU:     LDA     IOBYTE
         ANI     30H     ;ISOLATE PUNCH ASGT
         JZ      TTPNCH  ;TTY ACTIVE
-        CPI     20H
+        CP      20H
         JM      HSP     ;HIGH SPEED PUNCH ACTIVE
         JZ      PUS01   ;USER PUNCH 1 ACTIVE
         JMP     PUS02   ;USER PUNCH 2 ACTIVE
@@ -1308,7 +1309,7 @@ PRTA:   MOV     C,M     ;GET NEXT CHARACTER FROM MEMORY
         CALL    CO      ;OUTPUT IT
         INX     H       ;INCREMENT MEMORY POINTER
         MOV     A,C
-        RLC             ;TEST FOR BIT 7 DELIMITER
+        RLCA            ;TEST FOR BIT 7 DELIMITER
         JRNC    PRTA    ;NO DELIMITER, GO DO NEXT CHARACTER
 PRTB:   POP     B       ;RESTORE (B,C)
         RET
@@ -1493,7 +1494,7 @@ RDWRT:  ORA     A
         LDA     IDSV+3  ;GET SECTOR SIZE
 RDWRTO: DAD     H       ;DOUBLE (H,L)
         DCR     A       ;LOOP CONTROL
-        JP      RDWRTO
+        JP      P,RDWRTO
         PUSH    H
         MVI     C,80H   ;AUTO-WAIT BIT
         CALL    SETUP
