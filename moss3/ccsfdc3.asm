@@ -1101,7 +1101,7 @@ MEMHEX: MOV     A,M             ; GET MEMORY CONTENTS
         ADD     C               ; ADD TO CHECKSUM
         MOV     C,A             ; STORE NEW CHECKSUM
         INX     H               ; NEXT MEMORY LOCATION
-        DCX     D 
+        DCX     D
         DJNZ    MEMHEX          ; CONTINUE UNTIL RECORD SAVED
         MOV     A,C             ; RETRIEVE CHECKSUM
         XRI     0FFH            ; XOR 0xFF
