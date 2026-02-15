@@ -1584,7 +1584,7 @@ SU0:    IN      DTRCK   ;ELSE, SEE IF TRACK ZERO
         ORA     A
         MOV     A,M     ;REGET THE SELBITS
         JRNZ    SU1
-        ANI     0BFH    ;INSURE DDEN IS RESET
+        ANI     0BFH    ;INSURE DDEN IS RESET           (TRK0 = SD ?)
 SU1:    ORA     C       ;ADD ON AUTOWAIT BIT
         OUT     DCNTL   ;OUTPUT THE SELBITS
         LDA     SIDE    ;SET THE SIDE SELECT
