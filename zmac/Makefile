@@ -17,4 +17,4 @@ doc.inl: doc.c doc.txt
 	./doc >/dev/null
 
 clean:
-	rm -f zmac.c doc.inl $(DEP)
+	rm -f zmac.c doc.inl $(DEP) zmac doc
