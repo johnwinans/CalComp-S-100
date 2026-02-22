@@ -11,6 +11,9 @@ These are files that I have collected for reference and/or the basis of my own d
 	- [S-100 Links](https://retrotechnology.com/herbs_stuff/s100.html) Docs o'plenty!
 	- [CalComp Links](https://www.retrotechnology.com/herbs_stuff/d_ccs.html) including a zip of CCS sources.
 
+## [s100computers.com](https://www.s100computers.com/)
+A hugely useful set of notes on many types of S-100 boards and on-going projects.
+
 ## [deramp.com](https://deramp.com/downloads/mfe_archive/010-S100%20Computers%20and%20Boards/00-California%20Computer%20Systems/10-CCS%20S100%20Boards/CCS%202422%20Floppy%20Controller/)
 A California Computer Systems manual archive.
 
