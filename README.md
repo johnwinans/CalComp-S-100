@@ -5,4 +5,8 @@ Note: I recorded a [YouTube playlist](https://www.youtube.com/playlist?list=PL3b
 
 # Resources
 
-See [3rdpty](./3rdpty/) for links to related resources.
+- [3rdpty](./3rdpty/) - Links to related resources
+- [zmac](./zmac/) - The zmac compiler
+- [hello](./hello/) - The Hello World app (as seen on YouTube)
+- [moss22](./moss22/) - A zmac-compilable port of the 2422 FDC MOSS ROM Monitor
+- [moss3](./moss3/) - A zmac-compilable port of Nick Papadonis's `ccsfdc.asm` [found in 3rdpty](./3rdpty/)
