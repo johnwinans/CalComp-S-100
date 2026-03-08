@@ -25,7 +25,7 @@
 ; Manually step the head in and out using key codes from
 ; the CPU serial port.
 ;
-; s       select drive 3
+; s       select drive 2 (manual table is backward)
 ; space   unselect drive
 ; r       restore (step to track 0)
 ; ,       step in
@@ -62,26 +62,26 @@ cmdloop:
         call    CONI
 
         cp      'x'             ; exit application
-        ret     z
+;        ret     z
+        jp      z,0f000h        ; cold-start the MOSS monitor
 
         ld      hl,cmdloop      ; put a return address in the stack for tail-calls
         push    hl
 
         cp      's'             ; select the drive
-        jp      z,select
+        jp      z,select        ; tail-call
         cp      ' '             ; un-select the drive (motor off, etc.)
         jp      z,unselect
 
         cp      '.'             ; step in
-        jp      z,stepin
+        jp      z,stepin        ; tail-call
         cp      ','             ; step out
-        jp      z,stepout
+        jp      z,stepout       ; tail-call
 
         cp      'r'             ; restore (seek to track 0)
-        jp      z,restore
+        jp      z,restore       ; tail-call
 
-        pop     hl              ; fix the stack
-        jp      cmdloop
+        ret                     ; fix the stack & go back to cmdloop
 
 
 prompt: defb    'Disk stepperizer',0dh,0ah|80h
@@ -131,7 +131,7 @@ crlf:   db      0dh,0ah|80h
 ; Select drive B, turn on the motor, set MINI mode (5.25")
 ;**************************************************************************
 select:
-        ld      a,022h          ; mini, motor-on, ds3
+        ld      a,022h          ; mini, motor-on, ds2
         out     DCTRL1
         ret
 
@@ -144,15 +144,18 @@ unselect:
 ; Step the currently selected disk head in (head is NOT loaded)
 ;**************************************************************************
 stepin:
-        ld      a,058h          ; step in, update trk reg, fast
+;        ld      a,058h          ; step in, update trk reg, rate=0
+        ld      a,050h          ; step in, update trk reg, rate=0
         out     DCMD
         jp      waitdone
         
 
 ;**************************************************************************
+; Step the currently selected disk head in (head is NOT loaded)
 ;**************************************************************************
 stepout:
-        ld      a,078h          ; step out, update trk reg, fast
+;        ld      a,078h          ; step out, update trk reg, rate=0
+        ld      a,070h          ; step out, update trk reg, rate=0
         out     DCMD
         jp      waitdone
 
@@ -160,8 +163,8 @@ stepout:
 ; Move the head out to track 0
 ;**************************************************************************
 restore:
-;        ld      a,8             ; restore, load the head, fastest step rate (3msec)
-        ld      a,0             ; restore, do not load the head, fastest step rate (3msec)
+;        ld      a,8             ; restore, load the head, fastest step rate=0 (3msec)
+        ld      a,0             ; restore, do not load the head, step rate=0 (3msec)
         out     DCMD
 
 waitdone:
